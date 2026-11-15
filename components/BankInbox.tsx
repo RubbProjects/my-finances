@@ -140,10 +140,14 @@ async function fetchInbox(): Promise<Inbox> {
         .order("id")
         .range(i, i + 999),
     ),
-    fetchAll<{ movement_id: string; account: { account_id: string | null } | null }>((i) =>
+    fetchAll<{
+      movement_id: string;
+      amount: number;
+      account: { account_id: string | null } | null;
+    }>((i) =>
       supabase
         .from("bank_transactions")
-        .select("movement_id, account:bank_accounts(account_id)")
+        .select("movement_id, amount, account:bank_accounts(account_id)")
         .not("movement_id", "is", null)
         .gte("date", from)
         .lte("date", until)
@@ -155,7 +159,7 @@ async function fetchInbox(): Promise<Inbox> {
     pending: pendingRows,
     rules,
     app: appBalances,
-    linked: linked.map((e) => linkKey(e.movement_id, e.account?.account_id ?? null)),
+    linked: linked.map((e) => linkKey(e.movement_id, e.account?.account_id ?? null, e.amount)),
     autoRecorded,
   };
 }
@@ -610,7 +614,7 @@ export default function BankInbox({
             {pendingRows.slice(0, visibleCount).map((m) => {
               const accountId = m.account?.account_id ?? null;
               const duplicate = notDuplicates.includes(m.id) ? undefined : pairs.get(m.id);
-              const rule = findRule(inbox.rules, m, accountId);
+              const rule = findRule(inbox.rules, m);
               const bankName = `${m.account?.name ?? t("Cuenta", "Account")}${m.account?.iban_last4 ? ` ···${m.account.iban_last4}` : ""}`;
               const idle = busy === null;
 
@@ -779,7 +783,7 @@ export default function BankInbox({
               // The rule that recorded it (found again from the bank text)
               const rule =
                 a.auto === "recorded"
-                  ? findRule(inbox.rules, a, a.account?.account_id ?? null)
+                  ? findRule(inbox.rules, a)
                   : null;
               const how =
                 a.auto === "linked"
@@ -787,7 +791,9 @@ export default function BankInbox({
                   : !mov
                     ? ""
                     : mov.type === "transfer"
-                      ? `${t("Transferencia", "Transfer")} ${accountName(mov.account_id)} → ${accountName(mov.target_account_id)}`
+                      ? mov.account_id === mov.target_account_id
+                        ? `${t("Transferencia interna en", "Internal transfer in")} ${accountName(mov.account_id)}`
+                        : `${t("Transferencia", "Transfer")} ${accountName(mov.account_id)} → ${accountName(mov.target_account_id)}`
                       : `${mov.type === "expense" ? t("Gasto", "Expense") : t("Ingreso", "Income")} · ${categoryName(mov.category_id)}`;
               return (
                 <li

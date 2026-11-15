@@ -120,15 +120,6 @@ export default function MovementForm({
         setError(t("Elige la cuenta de origen y la de destino", "Choose the from and to accounts"));
         return;
       }
-      if (accountId === targetId) {
-        setError(
-          t(
-            "La cuenta de origen y la de destino deben ser distintas",
-            "The from and to accounts must be different",
-          ),
-        );
-        return;
-      }
     }
 
     if (isRefund && !expense) {
@@ -267,13 +258,11 @@ export default function MovementForm({
           <label className="text-sm opacity-70">{t("A la cuenta", "To account")}</label>
           <select className={field} value={targetId} onChange={(e) => setTargetId(e.target.value)}>
             <option value="">{t("Elige una cuenta", "Choose an account")}</option>
-            {accounts
-              .filter((c) => c.id !== accountId)
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+            {accounts.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.id === accountId ? `${c.name} (${t("la misma", "same account")})` : c.name}
+              </option>
+            ))}
           </select>
         </>
       )}

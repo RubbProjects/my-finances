@@ -377,7 +377,9 @@ export default function MovementHistory({
             const color = m.type === "transfer" ? "" : negative ? "text-down" : "text-up";
             const location =
               m.type === "transfer"
-                ? `${m.account?.name ?? "?"} → ${m.target?.name ?? "?"}`
+                ? m.account_id === m.target_account_id
+                  ? `${m.account?.name ?? "?"} (${t("transferencia interna", "internal transfer")})`
+                  : `${m.account?.name ?? "?"} → ${m.target?.name ?? "?"}`
                 : (m.account?.name ?? t("Efectivo", "Cash"));
             const refunds = m.type === "expense" ? result.refunds.get(m.id) : undefined;
             const ofExpense = m.refund_of_id ? result.expenses.get(m.refund_of_id) : undefined;

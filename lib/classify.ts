@@ -51,12 +51,12 @@ export function normalize(text: string): string {
 const roundCents = (n: number) => Math.round(n * 100);
 
 // The rule that matches the transaction: the one with the longest text (the most specific).
-// A transfer to the same bank account isn't valid.
-export function findRule(rules: Rule[], m: BankMovement, accountId: string | null): Rule | null {
+// A transfer can go to the same app account (two bank accounts kept inside one asset).
+export function findRule(rules: Rule[], m: BankMovement): Rule | null {
   const location = normalize(`${m.description ?? ""} ${m.counterparty ?? ""}`);
   return rules
     .filter((r) => r.text && location.includes(r.text))
-    .filter((r) => !r.is_transfer || (r.other_account_id && r.other_account_id !== accountId))
+    .filter((r) => !r.is_transfer || r.other_account_id)
     .reduce<Rule | null>((best, r) => (!best || r.text.length > best.text.length ? r : best), null);
 }
 
@@ -69,22 +69,29 @@ export function suggestedText(m: BankMovement): string {
   return withoutPrefix.split(" ").filter(Boolean).slice(0, 2).join(" ");
 }
 
-// How much the account changes with an app transaction (null if it doesn't touch it)
-function accountEffect(a: AppMovement, accountId: string): number | null {
+// How the account changes with an app transaction (empty if it doesn't touch it). A transfer
+// between two bank accounts kept inside the same app account has both sides: out and in.
+function accountEffects(a: AppMovement, accountId: string): number[] {
   const amount = Number(a.amount);
   if (a.type === "transfer") {
-    if (a.account_id === accountId) return -amount;
-    if (a.target_account_id === accountId) return amount;
-    return null;
+    const effects: number[] = [];
+    if (a.account_id === accountId) effects.push(-amount);
+    if (a.target_account_id === accountId) effects.push(amount);
+    return effects;
   }
-  if (a.account_id !== accountId) return null;
-  return a.type === "expense" ? -amount : amount; // income and adjustments already carry their sign
+  if (a.account_id !== accountId) return [];
+  return [a.type === "expense" ? -amount : amount]; // income and adjustments already carry their sign
 }
 
-// A link between the bank and the app, seen from an app account: a transfer
-// between two of your accounts can be linked once from each one
-export function linkKey(movementId: string, accountId: string | null): string {
-  return `${movementId}|${accountId ?? ""}`;
+// A link between the bank and the app, seen from an app account and from the side of the
+// money (out or in, from the sign of the bank amount): a transfer between two of your
+// accounts can be linked once from each one, and a transfer inside one account once per side
+export function linkKey(
+  movementId: string,
+  accountId: string | null,
+  bankAmount: number | string,
+): string {
+  return `${movementId}|${accountId ?? ""}|${Number(bankAmount) < 0 ? "out" : "in"}`;
 }
 
 // For each bank transaction, the app one that looks the same: same account, same day
@@ -101,13 +108,12 @@ export function matchDuplicates(
     if (!accountId) continue;
     const same = app.find(
       (a) =>
-        !used.has(linkKey(a.id, accountId)) &&
+        !used.has(linkKey(a.id, accountId, m.amount)) &&
         a.date === m.date &&
-        accountEffect(a, accountId) !== null &&
-        roundCents(accountEffect(a, accountId) ?? 0) === roundCents(Number(m.amount)),
+        accountEffects(a, accountId).some((x) => roundCents(x) === roundCents(Number(m.amount))),
     );
     if (same) {
-      used.add(linkKey(same.id, accountId));
+      used.add(linkKey(same.id, accountId, m.amount));
       pairs.set(m.id, same);
     }
   }
@@ -171,10 +177,6 @@ export function movementRow(
         error: outgoing
           ? tx("Elige a qué cuenta va", "Choose the account it goes to")
           : tx("Elige de qué cuenta viene", "Choose the account it comes from"),
-      };
-    if (e.otherAccountId === accountId)
-      return {
-        error: tx("La otra cuenta tiene que ser distinta", "The other account must be different"),
       };
     return {
       row: {
@@ -240,12 +242,14 @@ export function autoPlan(
     const pair = matchDuplicates([{ m, accountId }], list, used).get(m.id);
     if (pair) {
       const other = pair.account_id === accountId ? pair.target_account_id : pair.account_id;
-      if (pair.type !== "transfer" || !used.has(linkKey(pair.id, other))) return null;
-      used.add(linkKey(pair.id, accountId));
+      // The other half of the transfer is on the opposite side of the money
+      if (pair.type !== "transfer" || !used.has(linkKey(pair.id, other, -Number(m.amount))))
+        return null;
+      used.add(linkKey(pair.id, accountId, m.amount));
       return { type: "enlazar", m, movementId: pair.id };
     }
     if (!withRules) return null;
-    const rule = findRule(rules, m, accountId);
+    const rule = findRule(rules, m);
     if (!rule) return null;
     const r = movementRow(m, accountId, choiceFromRule(rule, m));
     if ("error" in r) return null;
@@ -259,7 +263,7 @@ export function autoPlan(
       target_account_id: r.row.target_account_id as string | null,
       description: r.row.description as string | null,
     });
-    used.add(linkKey(ref, accountId));
+    used.add(linkKey(ref, accountId, m.amount));
     return { type: "apuntar", m, ref, row: r.row };
   }
 }
