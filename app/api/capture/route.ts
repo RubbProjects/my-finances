@@ -7,7 +7,6 @@
 // "currency", "date" and "category" (the name of an expense category) are optional (the date
 // defaults to today in Madrid). The answer has the capture "id" and, when it was recorded, the
 // "categories" to choose from: the shortcut can ask which one and send it to /api/capture/category.
-import { NOT_IN_DEMO, DEMO } from "@/lib/demo";
 import { isEuro, normalizeCard, parseCaptureAmount } from "@/lib/captures";
 import {
   accountForCard,
@@ -28,7 +27,6 @@ const text = (v: unknown, max: number) =>
 
 export async function POST(request: Request) {
   try {
-    if (DEMO) return Response.json({ error: NOT_IN_DEMO }, { status: 403 });
     const admin = supabaseAdmin();
     const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
     const userId = await userForToken(admin, token);

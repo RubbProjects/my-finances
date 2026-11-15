@@ -3,13 +3,11 @@
 // question is dismissed.
 // It sends: Authorization: Bearer <token> and { "id": "<capture id>", "category": "Groceries" }.
 // "⚡ Automática" (AUTO_CATEGORY, or a name that doesn't exist) keeps the category the rules chose.
-import { DEMO, NOT_IN_DEMO } from "@/lib/demo";
 import { categoryIdByName, userForToken } from "@/lib/capture-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(request: Request) {
   try {
-    if (DEMO) return Response.json({ error: NOT_IN_DEMO }, { status: 403 });
     const admin = supabaseAdmin();
     const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
     const userId = await userForToken(admin, token);

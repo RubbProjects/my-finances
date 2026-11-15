@@ -6,7 +6,7 @@ Cada vez que pagas con Apple Pay, tu iPhone envía el pago a la app **en ese mom
 apunta el gasto al instante y el iPhone te pregunta **en qué categoría** quieres guardarlo. Días
 después, cuando el banco muestra el mismo pago, la app los empareja y no queda nada duplicado.
 
-> No disponible en la demo pública. Necesita iOS 17 o posterior. Solo ve los pagos con **Apple
+> Necesita iOS 17 o posterior. Solo ve los pagos con **Apple
 > Pay** (acercar el móvil o el reloj): tarjeta física, Bizum y transferencias siguen llegando
 > por el banco.
 

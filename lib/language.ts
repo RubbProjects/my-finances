@@ -6,10 +6,7 @@
 // translated.
 //
 // The language is chosen in Settings and remembered on this device. The first time, the
-// browser's language is used (Spanish if it is; otherwise, English); the public demo always starts
-// in English. Changing it reloads the page.
-
-import { DEMO } from "@/lib/demo";
+// browser's language is used (Spanish if it is; otherwise, English). Changing it reloads the page.
 
 export type Language = "es" | "en";
 
@@ -17,11 +14,10 @@ const STORAGE_KEY = "idioma";
 
 let current: Language | null = null;
 
-// Language the app is drawn in. On the server always Spanish, or English in the demo (there are
-// no preferences there).
+// Language the app is drawn in. On the server always Spanish (there are no preferences there).
 export function language(): Language {
   if (current) return current;
-  if (typeof window === "undefined") return DEMO ? "en" : "es";
+  if (typeof window === "undefined") return "es";
   let saved: string | null = null;
   try {
     saved = localStorage.getItem(STORAGE_KEY);
@@ -29,7 +25,7 @@ export function language(): Language {
   current =
     saved === "es" || saved === "en"
       ? saved
-      : !DEMO && (navigator.language ?? "").toLowerCase().startsWith("es")
+      : (navigator.language ?? "").toLowerCase().startsWith("es")
         ? "es"
         : "en";
   return current;

@@ -10,7 +10,6 @@ import {
   BALANCE_NAMES_EN,
   type Comparison,
 } from "@/lib/bank";
-import { DEMO } from "@/lib/demo";
 import { button, field, withSign, euros, prettyDate, today } from "@/lib/format";
 import { language, t } from "@/lib/language";
 import { translateMessage } from "@/lib/messages";
@@ -168,7 +167,7 @@ export default function Banks({ notice }: { notice: BankNotice | null }) {
 
   function onOpen(open: boolean) {
     if (open && !viewData) fetchViewData().then(show);
-    if (open && !banks && !DEMO) fetchBanks(country).then(showBanks);
+    if (open && !banks) fetchBanks(country).then(showBanks);
   }
 
   function changeCountry(p: string) {
@@ -333,7 +332,7 @@ export default function Banks({ notice }: { notice: BankNotice | null }) {
       })}
 
       {/* ---------- Compare with the bank balance ---------- */}
-      {connections.length > 0 && !DEMO && (
+      {connections.length > 0 && (
         <button
           onClick={compareWithBank}
           disabled={comparing}
@@ -418,55 +417,44 @@ export default function Banks({ notice }: { notice: BankNotice | null }) {
       )}
 
       {/* ---------- Connect another bank ---------- */}
-      {DEMO ? (
-        <p className="text-xs opacity-70">
-          {t(
-            "En la demo el banco es de mentira. La app de verdad se conecta a tu banco (solo lectura) mediante Enable Banking, con la normativa europea PSD2, y los movimientos llegan solos a «Por clasificar».",
-            "In the demo the bank is fake. The real app connects to your bank (read only) through Enable Banking, under the European PSD2 rules, and transactions arrive on their own in “To review”.",
-          )}
+      <p className="text-sm font-semibold">{t("Conectar un banco", "Connect a bank")}</p>
+      <p className="text-xs opacity-70">
+        {t(
+          "Solo lectura: la app puede ver tus movimientos, nunca mover dinero. Te llevará a la web de tu banco para dar permiso y volverás aquí. El permiso dura unos meses; para renovarlo, conéctalo otra vez.",
+          "Read only: the app can see your transactions, never move money. It takes you to your bank's website to give permission and you come back here. The permission lasts a few months; to renew it, connect again.",
+        )}
+      </p>
+      <select
+        className={field}
+        value={country}
+        onChange={(e) => changeCountry(e.target.value)}
+      >
+        {COUNTRIES.map((p) => (
+          <option key={p.id} value={p.id}>
+            {t(p.name, p.en)}
+          </option>
+        ))}
+      </select>
+      {banks === null ? (
+        <p className="text-sm opacity-70">{t("Cargando bancos...", "Loading banks...")}</p>
+      ) : banks.length === 0 ? (
+        <p className="text-sm opacity-70">
+          {t("No hay bancos para ese país.", "No banks for that country.")}
         </p>
       ) : (
         <>
-          <p className="text-sm font-semibold">{t("Conectar un banco", "Connect a bank")}</p>
-          <p className="text-xs opacity-70">
-            {t(
-              "Solo lectura: la app puede ver tus movimientos, nunca mover dinero. Te llevará a la web de tu banco para dar permiso y volverás aquí. El permiso dura unos meses; para renovarlo, conéctalo otra vez.",
-              "Read only: the app can see your transactions, never move money. It takes you to your bank's website to give permission and you come back here. The permission lasts a few months; to renew it, connect again.",
-            )}
-          </p>
-          <select
-            className={field}
-            value={country}
-            onChange={(e) => changeCountry(e.target.value)}
-          >
-            {COUNTRIES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {t(p.name, p.en)}
+          <select className={field} value={bank} onChange={(e) => setBank(e.target.value)}>
+            {banks.map((b) => (
+              <option key={b} value={b}>
+                {b}
               </option>
             ))}
           </select>
-          {banks === null ? (
-            <p className="text-sm opacity-70">{t("Cargando bancos...", "Loading banks...")}</p>
-          ) : banks.length === 0 ? (
-            <p className="text-sm opacity-70">
-              {t("No hay bancos para ese país.", "No banks for that country.")}
-            </p>
-          ) : (
-            <>
-              <select className={field} value={bank} onChange={(e) => setBank(e.target.value)}>
-                {banks.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-              <button onClick={connect} disabled={connecting || !bank} className={button}>
-                {connecting
-                  ? t("Abriendo el banco...", "Opening the bank...")
-                  : t("Conectar", "Connect")}
-              </button>
-            </>
-          )}
+          <button onClick={connect} disabled={connecting || !bank} className={button}>
+            {connecting
+              ? t("Abriendo el banco...", "Opening the bank...")
+              : t("Conectar", "Connect")}
+          </button>
         </>
       )}
     </Collapsible>
