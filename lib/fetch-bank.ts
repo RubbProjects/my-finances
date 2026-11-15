@@ -269,10 +269,10 @@ async function autoRecord(
         .order("id")
         .range(i, i + 999),
     ),
-    fetchAll<{ movement_id: string; bank_account_id: string }>((i) =>
+    fetchAll<{ movement_id: string; bank_account_id: string; amount: number }>((i) =>
       admin
         .from("bank_transactions")
-        .select("movement_id, bank_account_id")
+        .select("movement_id, bank_account_id, amount")
         .eq("user_id", userId)
         .not("movement_id", "is", null)
         .gte("date", from)
@@ -289,7 +289,7 @@ async function autoRecord(
       .map((m) => ({ m, accountId: accountOf.get(m.bank_account_id) ?? null })),
     rules,
     app,
-    new Set(linked.map((e) => linkKey(e.movement_id, accountOf.get(e.bank_account_id) ?? null))),
+    new Set(linked.map((e) => linkKey(e.movement_id, accountOf.get(e.bank_account_id) ?? null, e.amount))),
   );
 
   const result: AutoResult = { recorded: 0, linked: 0, error: null };

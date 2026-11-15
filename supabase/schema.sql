@@ -487,7 +487,7 @@ alter table public.fee_schedules add constraint fee_schedules_percent_check CHEC
 alter table public.movements add constraint movements_account_check CHECK (((type = ANY (ARRAY['expense'::text, 'income'::text])) OR (account_id IS NOT NULL)));
 alter table public.movements add constraint movements_amount_check CHECK (((type = 'adjustment'::text) OR (amount > (0)::numeric)));
 alter table public.movements add constraint movements_refund_check CHECK (((refund_of_id IS NULL) OR ((type = 'income'::text) AND (refund_of_id <> id))));
-alter table public.movements add constraint movements_transfer_check CHECK ((((type = 'transfer'::text) AND (target_account_id IS NOT NULL) AND (target_account_id <> account_id)) OR ((type <> 'transfer'::text) AND (target_account_id IS NULL))));
+alter table public.movements add constraint movements_transfer_check CHECK ((((type = 'transfer'::text) AND (target_account_id IS NOT NULL)) OR ((type <> 'transfer'::text) AND (target_account_id IS NULL))));
 alter table public.movements add constraint movements_type_check CHECK ((type = ANY (ARRAY['expense'::text, 'income'::text, 'transfer'::text, 'adjustment'::text])));
 alter table public.transactions add constraint transactions_rules_check CHECK (((fee >= (0)::numeric) AND (withholding >= (0)::numeric) AND (((type = ANY (ARRAY['buy'::text, 'sell'::text])) AND (amount > (0)::numeric) AND (units > (0)::numeric) AND (price > (0)::numeric)) OR ((type = 'dividend'::text) AND (amount > (0)::numeric)) OR ((type = 'split'::text) AND (factor > (0)::numeric) AND (amount = (0)::numeric) AND (units IS NOT NULL)))));
 alter table public.transactions add constraint transactions_switch_check CHECK (((switch_id IS NULL) OR (type = ANY (ARRAY['buy'::text, 'sell'::text]))));

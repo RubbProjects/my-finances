@@ -118,13 +118,11 @@ export default function ClassifyForm({
             onChange={(e) => setOtherAccountId(e.target.value)}
           >
             <option value="">{t("Elige una cuenta", "Choose an account")}</option>
-            {accounts
-              .filter((c) => c.id !== accountId)
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+            {accounts.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.id === accountId ? `${c.name} (${t("la misma", "same account")})` : c.name}
+              </option>
+            ))}
           </select>
         </>
       )}

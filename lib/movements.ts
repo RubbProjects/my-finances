@@ -55,6 +55,8 @@ export function effect(m: BaseMovement, accountFilter: string): number {
     case "adjustment":
       return amount;
     case "transfer":
+      // Between two sub-accounts of the same asset: nothing changes
+      if (m.account_id === m.target_account_id) return 0;
       if (accountFilter && m.account_id === accountFilter) return -amount;
       if (accountFilter && m.target_account_id === accountFilter) return amount;
       return 0;

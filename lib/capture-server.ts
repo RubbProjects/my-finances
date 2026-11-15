@@ -104,7 +104,7 @@ export async function recordCapture(
     counterparty: null,
   };
   // A card payment is never a transfer between your accounts
-  const rule = findRule(((rules ?? []) as Rule[]).filter((r) => !r.is_transfer), asMovement, accountId);
+  const rule = findRule(((rules ?? []) as Rule[]).filter((r) => !r.is_transfer), asMovement);
   const built = movementRow(asMovement, accountId, {
     isTransfer: false,
     categoryId: categoryId ?? rule?.category_id ?? null,
