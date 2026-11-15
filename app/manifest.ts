@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { APP_DESCRIPTION, APP_NAME, DEMO } from "@/lib/demo";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/app-info";
 import { ICON_BLUE } from "@/lib/icon";
 
 // Data to install the app on the phone (name, icon, full screen)
@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: APP_NAME,
     short_name: APP_NAME,
     description: APP_DESCRIPTION,
-    lang: DEMO ? "en" : "es",
+    lang: "es",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

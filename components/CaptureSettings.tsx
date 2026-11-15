@@ -5,7 +5,6 @@ import { fetchAccounts, type Account } from "@/components/Accounts";
 import Collapsible from "@/components/Collapsible";
 import { callApi } from "@/lib/api";
 import { daysBetween, isMissing, lagSummary } from "@/lib/captures";
-import { DEMO } from "@/lib/demo";
 import { euros, prettyDate, today } from "@/lib/format";
 import { t } from "@/lib/language";
 import { supabase } from "@/lib/supabase";
@@ -73,19 +72,6 @@ export default function CaptureSettings() {
   useEffect(() => {
     fetchData().then(show);
   }, [show]);
-
-  if (DEMO) {
-    return (
-      <Collapsible title={t("⚡ Captura instantánea (iPhone)", "⚡ Instant capture (iPhone)")}>
-        <p className="text-sm text-muted">
-          {t(
-            "No disponible en la demo: necesita un atajo en tu iPhone que envíe tus pagos.",
-            "Not available in the demo: it needs a shortcut on your iPhone that sends your payments.",
-          )}
-        </p>
-      </Collapsible>
-    );
-  }
 
   async function createToken() {
     setMessage("");

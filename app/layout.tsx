@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { APP_DESCRIPTION, APP_NAME, DEMO } from "@/lib/demo";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/app-info";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang={DEMO ? "en" : "es"} className="h-full antialiased">
+    <html lang="es" className="h-full antialiased">
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

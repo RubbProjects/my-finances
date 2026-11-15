@@ -6,7 +6,7 @@ Every time you pay with Apple Pay, your iPhone sends the payment to the app **at
 The app records the expense right away and the iPhone asks **which category** to file it under.
 Days later, when the bank shows the same payment, the app pairs both and nothing is duplicated.
 
-> Not available in the public demo. Requires iOS 17 or later. It only sees **Apple Pay** payments
+> Requires iOS 17 or later. It only sees **Apple Pay** payments
 > (tapping the phone or the watch): physical card, Bizum and transfers still come from the bank.
 
 ## 1. In the app
